@@ -7,6 +7,7 @@ import '../providers/trade_provider.dart';
 import '../../core/routing/app_router.dart';
 import '../../domain/entities/trade_filter.dart';
 import '../widgets/section_header.dart';
+import '../widgets/performance_trend_chart.dart';
 import '../../core/theme/app_theme.dart';
 
 class HomeOverviewView extends ConsumerWidget {
@@ -127,6 +128,20 @@ class HomeOverviewView extends ConsumerWidget {
                       isHighlight: false,
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Performance Trend Section
+              SectionHeader(
+                title: 'Performance Trend',
+                subtitle: 'Equity curve visualization',
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: PerformanceTrendChart(
+                  equityCurve: analytics.equityCurve,
                 ),
               ),
               const SizedBox(height: 40),

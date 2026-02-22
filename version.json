@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "buildNumber": "1",
+  "version": "1.1.0",
+  "buildNumber": "2",
   "downloadUrl": "https://github.com/GlorysID/jurnal_mobile/releases",
-  "releaseNotes": "Initial premium release with Cyber-Dark UI."
+  "releaseNotes": "Performance Trend Chart added & UI optimizations."
 }
