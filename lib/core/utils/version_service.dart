@@ -1,0 +1,149 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../theme/app_theme.dart';
+
+class VersionService {
+  static const String _versionUrl =
+      'https://raw.githubusercontent.com/GlorysID/jurnal_mobile/main/version.json';
+
+  Future<void> checkForUpdate(
+    BuildContext context, {
+    bool showNoUpdate = false,
+  }) async {
+    try {
+      final response = await http.get(Uri.parse(_versionUrl));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final String latestVersion = data['version'];
+        final int latestBuildNumber = int.parse(data['buildNumber']);
+        final String downloadUrl = data['downloadUrl'];
+        final String releaseNotes =
+            data['releaseNotes'] ?? 'No release notes provided.';
+
+        final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+        final String currentVersion = packageInfo.version;
+        final int currentBuildNumber = int.parse(packageInfo.buildNumber);
+
+        if (_isNewerVersion(
+          latestVersion,
+          latestBuildNumber,
+          currentVersion,
+          currentBuildNumber,
+        )) {
+          if (context.mounted) {
+            _showUpdateDialog(
+              context,
+              latestVersion,
+              downloadUrl,
+              releaseNotes,
+            );
+          }
+        } else if (showNoUpdate && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Application is up to date.')),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error checking for update: $e');
+    }
+  }
+
+  bool _isNewerVersion(
+    String latestVer,
+    int latestBuild,
+    String currentVer,
+    int currentBuild,
+  ) {
+    if (latestBuild > currentBuild) return true;
+
+    List<int> latestParts = latestVer.split('.').map(int.parse).toList();
+    List<int> currentParts = currentVer.split('.').map(int.parse).toList();
+
+    for (int i = 0; i < latestParts.length && i < currentParts.length; i++) {
+      if (latestParts[i] > currentParts[i]) return true;
+      if (latestParts[i] < currentParts[i]) return false;
+    }
+
+    return latestParts.length > currentParts.length;
+  }
+
+  void _showUpdateDialog(
+    BuildContext context,
+    String version,
+    String url,
+    String notes,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.cardDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Update Available!',
+          style: TextStyle(
+            color: AppTheme.accentColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'A new version ($version) is available.',
+              style: const TextStyle(
+                color: AppTheme.textColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Release Notes:',
+              style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              notes,
+              style: const TextStyle(color: AppTheme.textColor, fontSize: 13),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Later',
+              style: TextStyle(color: AppTheme.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.accentColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () async {
+              final Uri uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
+            child: const Text(
+              'Download',
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

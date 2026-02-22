@@ -4,6 +4,7 @@ import '../../core/utils/data_manager.dart';
 import '../../core/routing/app_router.dart';
 import '../widgets/section_header.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/version_service.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
@@ -350,6 +351,22 @@ class SettingsView extends ConsumerWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildSettingItem(
+                  icon: Icons.system_update_alt_outlined,
+                  title: 'Check for Updates',
+                  subtitle: 'Stay on the latest version',
+                  onTap: () {
+                    VersionService().checkForUpdate(
+                      context,
+                      showNoUpdate: true,
+                    );
+                  },
+                ),
+              ),
+
               const SizedBox(height: 40),
             ],
           ),

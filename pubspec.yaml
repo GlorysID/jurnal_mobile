@@ -45,6 +45,9 @@ dependencies:
   intl: any
   file_picker: ^8.3.3
   google_fonts: ^6.2.1
+  package_info_plus: ^8.2.1
+  url_launcher: ^6.3.1
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
