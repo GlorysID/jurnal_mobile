@@ -14,7 +14,9 @@ class VersionService {
     bool showNoUpdate = false,
   }) async {
     try {
-      final response = await http.get(Uri.parse(_versionUrl));
+      final response = await http.get(
+        Uri.parse('$_versionUrl?t=${DateTime.now().millisecondsSinceEpoch}'),
+      );
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final String latestVersion = data['version'];
@@ -45,14 +47,38 @@ class VersionService {
               releaseNotes,
             );
           }
-        } else if (showNoUpdate && context.mounted) {
+        } else {
+          if (showNoUpdate && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'App is up to date (v$currentVersion+$currentBuildNumber)',
+                ),
+                backgroundColor: AppTheme.successColor,
+              ),
+            );
+          }
+        }
+      } else {
+        if (showNoUpdate && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Application is up to date.')),
+            const SnackBar(
+              content: Text('Failed to connect to update server.'),
+              backgroundColor: AppTheme.errorColor,
+            ),
           );
         }
       }
     } catch (e) {
       debugPrint('Error checking for update: $e');
+      if (showNoUpdate && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Update Error: $e'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
     }
   }
 
