@@ -50,72 +50,86 @@ class _AddTradeScreenState extends ConsumerState<AddTradeScreen> {
 
   void _saveTrade() async {
     if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+      try {
+        setState(() => _isLoading = true);
 
-      final user = ref.read(authProvider).value;
-      if (user == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      double entry = double.parse(_entryController.text);
-      double? exit = _exitController.text.isNotEmpty
-          ? double.parse(_exitController.text)
-          : null;
-      double size = double.parse(_sizeController.text);
-
-      double? pnl;
-      if (exit != null) {
-        if (_direction == 'Long' || _direction == 'Buy') {
-          pnl = (exit - entry) * size;
-        } else {
-          pnl = (entry - exit) * size;
+        final user = ref.read(authProvider).value;
+        if (user == null) {
+          throw Exception('User session not found. Please log in again.');
         }
-        if (_feeController.text.isNotEmpty) {
-          pnl -= double.parse(_feeController.text);
+
+        double? entry = double.tryParse(_entryController.text);
+        if (entry == null) throw Exception('Invalid Entry Price format');
+
+        double? exit = _exitController.text.isNotEmpty
+            ? double.tryParse(_exitController.text)
+            : null;
+        if (_exitController.text.isNotEmpty && exit == null) {
+          throw Exception('Invalid Exit Price format');
         }
-      }
 
-      final trade = TradeEntity(
-        id: 0,
-        userId: user.id,
-        date: _selectedDate,
-        pair: _pairController.text.toUpperCase(),
-        marketType: _marketType,
-        direction: _direction,
-        entryPrice: entry,
-        exitPrice: exit,
-        stopLoss: _slController.text.isNotEmpty
-            ? double.parse(_slController.text)
-            : null,
-        takeProfit: _tpController.text.isNotEmpty
-            ? double.parse(_tpController.text)
-            : null,
-        positionSize: size,
-        leverage:
-            _marketType == 'Futures' && _leverageController.text.isNotEmpty
-            ? int.parse(_leverageController.text)
-            : null,
-        fee: _feeController.text.isNotEmpty
-            ? double.parse(_feeController.text)
-            : null,
-        riskPercentage: _riskController.text.isNotEmpty
-            ? double.parse(_riskController.text)
-            : null,
-        pnl: pnl,
-        notes:
-            _notesController.text +
-            (_marketType == 'Spot DEX' && _slippageController.text.isNotEmpty
-                ? '\nSlippage: ${_slippageController.text}%'
-                : ''),
-        screenshotPath: _screenshot?.path,
-        createdAt: DateTime.now(),
-      );
+        double? size = double.tryParse(_sizeController.text);
+        if (size == null) throw Exception('Invalid Position Size format');
 
-      await ref.read(tradesProvider.notifier).addTrade(trade);
-      if (mounted) {
-        setState(() => _isLoading = false);
-        Navigator.pop(context);
+        double? pnl;
+        if (exit != null) {
+          if (_direction == 'Long' || _direction == 'Buy') {
+            pnl = (exit - entry) * size;
+          } else {
+            pnl = (entry - exit) * size;
+          }
+          if (_feeController.text.isNotEmpty) {
+            double? feeValue = double.tryParse(_feeController.text);
+            if (feeValue != null) {
+              pnl -= feeValue;
+            }
+          }
+        }
+
+        final trade = TradeEntity(
+          id: 0,
+          userId: user.id,
+          date: _selectedDate,
+          pair: _pairController.text.toUpperCase(),
+          marketType: _marketType,
+          direction: _direction,
+          entryPrice: entry,
+          exitPrice: exit,
+          stopLoss: double.tryParse(_slController.text),
+          takeProfit: double.tryParse(_tpController.text),
+          positionSize: size,
+          leverage: _marketType == 'Futures'
+              ? int.tryParse(_leverageController.text)
+              : null,
+          fee: double.tryParse(_feeController.text),
+          riskPercentage: double.tryParse(_riskController.text),
+          pnl: pnl,
+          notes:
+              _notesController.text +
+              (_marketType == 'Spot DEX' && _slippageController.text.isNotEmpty
+                  ? '\nSlippage: ${_slippageController.text}%'
+                  : ''),
+          screenshotPath: _screenshot?.path,
+          createdAt: DateTime.now(),
+        );
+
+        await ref.read(tradesProvider.notifier).addTrade(trade);
+        if (mounted) {
+          setState(() => _isLoading = false);
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Error: ${e.toString().replaceAll('Exception: ', '')}',
+              ),
+              backgroundColor: AppTheme.errorColor,
+            ),
+          );
+        }
       }
     }
   }

@@ -29,7 +29,9 @@ AnalyticsEntity _calculateAnalytics(List<TradeEntity> trades) {
   double currentEquity = 0;
 
   for (var trade in closedTrades) {
-    double pnl = trade.pnl!;
+    double pnl = trade.pnl ?? 0;
+    if (pnl.isNaN || pnl.isInfinite) pnl = 0;
+
     totalPnl += pnl;
     currentEquity += pnl;
 
@@ -41,13 +43,15 @@ AnalyticsEntity _calculateAnalytics(List<TradeEntity> trades) {
       losingTrades++;
     }
 
-    if (currentEquity > peakEquity) {
+    if (currentEquity.isFinite && currentEquity > peakEquity) {
       peakEquity = currentEquity;
     }
 
-    double drawdown = peakEquity - currentEquity;
-    if (drawdown > maxDrawdown) {
-      maxDrawdown = drawdown;
+    if (currentEquity.isFinite) {
+      double drawdown = peakEquity - currentEquity;
+      if (drawdown > maxDrawdown) {
+        maxDrawdown = drawdown;
+      }
     }
   }
 

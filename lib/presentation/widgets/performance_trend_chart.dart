@@ -23,9 +23,26 @@ class PerformanceTrendChart extends StatelessWidget {
     }
 
     final List<FlSpot> spots = [];
+    double minVal = 0;
+    double maxVal = 0;
+
     for (int i = 0; i < equityCurve.length; i++) {
-      spots.add(FlSpot(i.toDouble(), equityCurve[i]));
+      double val = equityCurve[i];
+      if (val.isNaN || val.isInfinite) val = 0;
+      spots.add(FlSpot(i.toDouble(), val));
+      if (val < minVal) minVal = val;
+      if (val > maxVal) maxVal = val;
     }
+
+    // Add some padding to Y axis
+    double padding = (maxVal - minVal).abs() * 0.1;
+    if (padding == 0) padding = 100;
+    double minY = minVal - padding;
+    double maxY = maxVal + padding;
+
+    // Adjust interval based on range
+    double interval = (maxY - minY) / 5;
+    if (interval == 0 || interval.isNaN || interval.isInfinite) interval = 1000;
 
     return Container(
       height: 220,
@@ -34,6 +51,8 @@ class PerformanceTrendChart extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(8, 24, 20, 12),
       child: LineChart(
         LineChartData(
+          minY: minY,
+          maxY: maxY,
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
@@ -44,16 +63,22 @@ class PerformanceTrendChart extends StatelessWidget {
               );
             },
           ),
-          titlesData: const FlTitlesData(
+          titlesData: FlTitlesData(
             show: true,
-            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            bottomTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 45,
-                interval: 1000,
+                interval: interval,
                 getTitlesWidget: leftTitleWidgets,
               ),
             ),
@@ -88,15 +113,18 @@ class PerformanceTrendChart extends StatelessWidget {
   }
 
   static Widget leftTitleWidgets(double value, TitleMeta meta) {
+    if (value == meta.min || value == meta.max) return const SizedBox();
+
     const style = TextStyle(
       color: AppTheme.textSecondary,
       fontWeight: FontWeight.bold,
       fontSize: 10,
     );
     String text;
-    if (value >= 1000) {
-      text = '${(value / 1000).toStringAsFixed(1)}k';
-    } else if (value <= -1000) {
+    double absVal = value.abs();
+    if (absVal >= 1000000) {
+      text = '${(value / 1000000).toStringAsFixed(1)}M';
+    } else if (absVal >= 1000) {
       text = '${(value / 1000).toStringAsFixed(1)}k';
     } else {
       text = value.toInt().toString();
