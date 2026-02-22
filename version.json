@@ -1,6 +1,6 @@
 {
-  "version": "1.1.1",
-  "buildNumber": "5",
+  "version": "1.1.2",
+  "buildNumber": "6",
   "downloadUrl": "https://github.com/GlorysID/jurnal_mobile/releases",
-  "releaseNotes": "UI Gacor v2: Trading Streaks, Premium Analytics Layout, and stability fixes."
+  "releaseNotes": "Auto-update verification test (v1.1.2+6)."
 }
