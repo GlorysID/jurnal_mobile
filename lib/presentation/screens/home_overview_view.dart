@@ -8,13 +8,27 @@ import '../../core/routing/app_router.dart';
 import '../../domain/entities/trade_filter.dart';
 import '../widgets/section_header.dart';
 import '../widgets/performance_trend_chart.dart';
+import '../../core/utils/version_service.dart';
 import '../../core/theme/app_theme.dart';
 
-class HomeOverviewView extends ConsumerWidget {
+class HomeOverviewView extends ConsumerStatefulWidget {
   const HomeOverviewView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeOverviewView> createState() => _HomeOverviewViewState();
+}
+
+class _HomeOverviewViewState extends ConsumerState<HomeOverviewView> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      VersionService().checkForUpdate(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userState = ref.watch(authProvider);
     final username = userState.value?.username ?? 'Trader';
     final analytics = ref.watch(analyticsProvider);

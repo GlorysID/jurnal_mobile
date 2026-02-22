@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/utils/data_manager.dart';
 import '../../core/routing/app_router.dart';
 import '../widgets/section_header.dart';
@@ -331,12 +332,19 @@ class SettingsView extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Version 1.0.0',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.textSecondary,
-                        ),
+                      FutureBuilder<PackageInfo>(
+                        future: PackageInfo.fromPlatform(),
+                        builder: (context, snapshot) {
+                          final version = snapshot.data?.version ?? '1.0.0';
+                          final buildNumber = snapshot.data?.buildNumber ?? '1';
+                          return Text(
+                            'Version $version+$buildNumber',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.textSecondary,
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 8),
                       Text(

@@ -27,6 +27,10 @@ class VersionService {
         final String currentVersion = packageInfo.version;
         final int currentBuildNumber = int.parse(packageInfo.buildNumber);
 
+        debugPrint(
+          'Update Check: Local($currentVersion+$currentBuildNumber) vs Remote($latestVersion+$latestBuildNumber)',
+        );
+
         if (_isNewerVersion(
           latestVersion,
           latestBuildNumber,
