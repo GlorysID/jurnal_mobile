@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'home_overview_view.dart';
 import 'trades_list_view.dart';
@@ -18,59 +19,77 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.primaryColor,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          const HomeOverviewView(),
-          TradesListView(),
-          const DashboardView(),
-          const SettingsView(),
-        ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light.copyWith(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: AppTheme.primaryColor,
+        systemNavigationBarIconBrightness: Brightness.light,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.primaryColor,
-          border: Border(
-            top: BorderSide(
-              color: AppTheme.borderColor.withValues(alpha: 0.3),
-              width: 0.5,
-            ),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
+      child: Scaffold(
+        backgroundColor: AppTheme.primaryColor,
+        body: IndexedStack(
+          index: _currentIndex,
+          children: [
+            const HomeOverviewView(),
+            TradesListView(),
+            const DashboardView(),
+            const SettingsView(),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(0, Icons.home_filled, 'Home', Icons.home_outlined),
-              _buildNavItem(
-                1,
-                Icons.trending_up_rounded,
-                'Trades',
-                Icons.trending_up_outlined,
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor,
+            border: Border(
+              top: BorderSide(
+                color: AppTheme.borderColor.withValues(alpha: 0.3),
+                width: 0.5,
               ),
-              _buildNavItem(
-                2,
-                Icons.bar_chart_rounded,
-                'Analytics',
-                Icons.bar_chart_outlined,
-              ),
-              _buildNavItem(
-                3,
-                Icons.person_rounded,
-                'Profile',
-                Icons.person_outline,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
               ),
             ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 8.0,
+                horizontal: 12.0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(
+                    0,
+                    Icons.home_filled,
+                    'Home',
+                    Icons.home_outlined,
+                  ),
+                  _buildNavItem(
+                    1,
+                    Icons.trending_up_rounded,
+                    'Trades',
+                    Icons.trending_up_outlined,
+                  ),
+                  _buildNavItem(
+                    2,
+                    Icons.bar_chart_rounded,
+                    'Analytics',
+                    Icons.bar_chart_outlined,
+                  ),
+                  _buildNavItem(
+                    3,
+                    Icons.person_rounded,
+                    'Profile',
+                    Icons.person_outline,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
