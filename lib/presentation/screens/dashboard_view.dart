@@ -16,6 +16,102 @@ class DashboardView extends ConsumerStatefulWidget {
 class _DashboardViewState extends ConsumerState<DashboardView> {
   int selectedYear = 2024;
 
+  Widget _buildQuickAction(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.borderColor.withValues(alpha: 0.3)),
+      ),
+      child: IconButton(
+        icon: const Icon(Icons.tune_rounded, color: AppTheme.accentColor),
+        onPressed: () {},
+      ),
+    );
+  }
+
+  Widget _buildStreakCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppTheme.cardDark,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textColor,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: AppTheme.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegendItem(String label, Color color) {
+    return Row(
+      children: [
+        if (label == 'Less') ...[
+          Text(
+            label,
+            style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+          ),
+          const SizedBox(width: 8),
+        ],
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        if (label == 'More') ...[
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 10, color: AppTheme.textSecondary),
+          ),
+        ],
+        if (label != 'Less' && label != 'More') const SizedBox(width: 4),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final analytics = ref.watch(analyticsProvider);
@@ -29,7 +125,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Enhanced Header
+              // Premium Header
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
@@ -39,7 +135,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Sales per',
+                          'Performance Summary',
                           style: const TextStyle(
                             fontSize: 14,
                             color: AppTheme.textSecondary,
@@ -48,9 +144,9 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                           ),
                         ),
                         Text(
-                          'employee per month',
+                          'Trading Analytics',
                           style: GoogleFonts.outfit(
-                            fontSize: 24,
+                            fontSize: 28,
                             fontWeight: FontWeight.bold,
                             color: AppTheme.textColor,
                             letterSpacing: -0.5,
@@ -59,7 +155,7 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '${analytics.totalTrades} contributions in the last year',
+                          '${analytics.totalTrades} signals recorded this year',
                           style: const TextStyle(
                             fontSize: 12,
                             color: AppTheme.textSecondary,
@@ -68,41 +164,29 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                         ),
                       ],
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: AppTheme.accentGradient,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.accentColor.withValues(alpha: 0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Settings are available in the Profile tab',
-                                ),
-                              ),
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(16),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Icon(
-                              Icons.settings_outlined,
-                              color: Colors.black.withValues(alpha: 0.8),
-                              size: 22,
-                            ),
-                          ),
-                        ),
-                      ),
+                    _buildQuickAction(context),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Trading Streaks (Gacor Row)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    _buildStreakCard(
+                      'Win Streak',
+                      '${analytics.winningStreak}',
+                      Icons.keyboard_double_arrow_up_rounded,
+                      AppTheme.successColor,
+                    ),
+                    const SizedBox(width: 12),
+                    _buildStreakCard(
+                      'Loss Streak',
+                      '${analytics.losingStreak}',
+                      Icons.keyboard_double_arrow_down_rounded,
+                      AppTheme.errorColor,
                     ),
                   ],
                 ),
@@ -117,13 +201,14 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                   physics: const BouncingScrollPhysics(),
                   child: Row(
                     children: [
+                      _buildYearChip(
+                        DateTime.now().year,
+                        selectedYear == DateTime.now().year,
+                      ),
+                      const SizedBox(width: 12),
                       _buildYearChip(2024, selectedYear == 2024),
                       const SizedBox(width: 12),
                       _buildYearChip(2023, selectedYear == 2023),
-                      const SizedBox(width: 12),
-                      _buildYearChip(2022, selectedYear == 2022),
-                      const SizedBox(width: 12),
-                      _buildYearChip(2021, selectedYear == 2021),
                     ],
                   ),
                 ),
@@ -132,8 +217,8 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
 
               // Enhanced Heatmap Section
               SectionHeader(
-                title: 'Trading Activity',
-                subtitle: 'Consistency heatmap',
+                title: 'Activity Heatmap',
+                subtitle: 'Daily consistency tracking',
               ),
               const SizedBox(height: 16),
               Padding(
@@ -148,9 +233,9 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
@@ -162,23 +247,19 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Less activity',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppTheme.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          _buildLegendItem(
+                            'Less',
+                            AppTheme.cardDark.withValues(alpha: 0.5),
                           ),
-                          const Spacer(),
-                          const Text(
-                            'More activity',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppTheme.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          _buildLegendItem(
+                            '',
+                            AppTheme.accentColor.withValues(alpha: 0.3),
                           ),
+                          _buildLegendItem(
+                            '',
+                            AppTheme.accentColor.withValues(alpha: 0.6),
+                          ),
+                          _buildLegendItem('More', AppTheme.accentColor),
                         ],
                       ),
                     ],
@@ -187,10 +268,10 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
               ),
               const SizedBox(height: 32),
 
-              // Performance Metrics with Enhanced Layout
+              // Key Metrics Section
               SectionHeader(
-                title: 'Key Metrics',
-                subtitle: 'Performance indicators',
+                title: 'Efficiency Metrics',
+                subtitle: 'Profitability indicators',
               ),
               const SizedBox(height: 16),
               Padding(
@@ -199,19 +280,19 @@ class _DashboardViewState extends ConsumerState<DashboardView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildMetricDiamond(
-                      '\$${(analytics.totalTrades > 0 ? analytics.totalPnl / analytics.totalTrades : 0).toStringAsFixed(1)}',
-                      'Avg.pnl',
-                      isGreen: true,
-                    ),
-                    _buildMetricDiamond(
                       '${analytics.winRate.toStringAsFixed(1)}%',
                       'Win Rate',
                       isGreen: true,
                     ),
                     _buildMetricDiamond(
                       '\$${analytics.expectedValue.toStringAsFixed(1)}',
-                      'Volume',
-                      isGreen: true,
+                      'Expectancy',
+                      isGreen: false,
+                    ),
+                    _buildMetricDiamond(
+                      '${analytics.totalTrades}',
+                      'Total',
+                      isGreen: false,
                     ),
                   ],
                 ),

@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "buildNumber": "4",
+  "version": "1.1.1",
+  "buildNumber": "5",
   "downloadUrl": "https://github.com/GlorysID/jurnal_mobile/releases",
-  "releaseNotes": "Critical fix for trade saving crash & performance stability."
+  "releaseNotes": "UI Gacor v2: Trading Streaks, Premium Analytics Layout, and stability fixes."
 }

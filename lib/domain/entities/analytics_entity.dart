@@ -8,6 +8,9 @@ class AnalyticsEntity {
   final double expectedValue;
   final List<double> equityCurve; // For chart
 
+  final int winningStreak;
+  final int losingStreak;
+
   AnalyticsEntity({
     required this.totalPnl,
     required this.totalTrades,
@@ -17,6 +20,8 @@ class AnalyticsEntity {
     required this.maxDrawdown,
     required this.expectedValue,
     required this.equityCurve,
+    required this.winningStreak,
+    required this.losingStreak,
   });
 
   factory AnalyticsEntity.empty() {
@@ -29,6 +34,8 @@ class AnalyticsEntity {
       maxDrawdown: 0,
       expectedValue: 0,
       equityCurve: [0],
+      winningStreak: 0,
+      losingStreak: 0,
     );
   }
 }

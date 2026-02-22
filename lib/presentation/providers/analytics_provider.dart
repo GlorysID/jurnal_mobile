@@ -28,6 +28,11 @@ AnalyticsEntity _calculateAnalytics(List<TradeEntity> trades) {
 
   double currentEquity = 0;
 
+  int maxWinStreak = 0;
+  int maxLossStreak = 0;
+  int currentWinStreak = 0;
+  int currentLossStreak = 0;
+
   for (var trade in closedTrades) {
     double pnl = trade.pnl ?? 0;
     if (pnl.isNaN || pnl.isInfinite) pnl = 0;
@@ -39,8 +44,14 @@ AnalyticsEntity _calculateAnalytics(List<TradeEntity> trades) {
 
     if (pnl > 0) {
       winningTrades++;
+      currentWinStreak++;
+      currentLossStreak = 0;
+      if (currentWinStreak > maxWinStreak) maxWinStreak = currentWinStreak;
     } else if (pnl < 0) {
       losingTrades++;
+      currentLossStreak++;
+      currentWinStreak = 0;
+      if (currentLossStreak > maxLossStreak) maxLossStreak = currentLossStreak;
     }
 
     if (currentEquity.isFinite && currentEquity > peakEquity) {
@@ -68,5 +79,7 @@ AnalyticsEntity _calculateAnalytics(List<TradeEntity> trades) {
     maxDrawdown: maxDrawdown,
     expectedValue: expectedValue,
     equityCurve: equityCurve,
+    winningStreak: maxWinStreak,
+    losingStreak: maxLossStreak,
   );
 }
